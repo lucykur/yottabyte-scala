@@ -17,7 +17,7 @@ object OlympicsAnalysis {
 
     val inputFilePath = if (argsValid) arg(1) else "hdfs:///tmp/olympics-data.csv"
 
-    val outputFilePath = if (argsValid) arg(1) else "hdfs:///tmp/olympics-aggregations"
+    val outputFilePath = if (argsValid) arg(2) else "hdfs:///tmp/olympics-aggregations"
 
     val sc = new SparkContext(
       new SparkConf()
