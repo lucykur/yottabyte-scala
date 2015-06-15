@@ -30,22 +30,29 @@ object OlympicsAnalysis {
     )
     val file = sc.textFile(inputFilePath)
 
-    val filteredRecords = file.filter(line => !(line.equals("") || line.startsWith("Athlete")))
+    val parsedRecords = file.map(parse)
 
-    val medalsPerCountry: RDD[(String, Int)] = totalMedalsPerCountry(filteredRecords, sc)
+    val medalsPerCountry: RDD[(String, Int)] = totalMedalsPerCountry(parsedRecords)
 
     medalsPerCountry.saveAsTextFile(outputFilePath)
   }
 
   def parse(input: String): Record = {
     val split = input.split(",")
-    Record(split(0), split(1), split(2).toInt, split(3), split(4).toInt, split(5).toInt, split(6).toInt, split(7).toInt)
+    Record(split(0),
+      split(1),
+      split(2).toInt,
+      split(3),
+      split(4).toInt,
+      split(5).toInt,
+      split(6).toInt,
+      split(7).toInt)
   }
 
-  def totalMedalsPerCountry(input: RDD[String], sc: SparkContext): RDD[(String, Int)] = {
+  def totalMedalsPerCountry(input: RDD[Record]): RDD[(String, Int)] = {
 
-    val parsedRecords = input.map(parse)
-
-    parsedRecords.map(record => (record.country, record.total)).reduceByKey(_ + _).sortBy { case (country, total) => -total }
+    input.map(record => (record.country, record.total))
+      .reduceByKey(_ + _)
+      .sortBy { case (country, total) => -total }
   }
 }
