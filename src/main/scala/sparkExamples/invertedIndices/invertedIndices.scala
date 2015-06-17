@@ -9,8 +9,8 @@ object invertedIndices {
 
   def main(arg: Array[String]) = {
 
-    val inputPath = "hdfs:///tmp/bible+shakes.nopunc.gz"
-    val outputPath = "hdfs:///user/lucykur/invertedIndices"
+    val inputPath = "hdfs:///user/lucykur/invertedIndices/sample.txt"
+    val outputPath = "hdfs:///user/lucykur/invertedIndices/results"
 
     val sc = new SparkContext(
       new SparkConf()
@@ -24,9 +24,9 @@ object invertedIndices {
 
     sc.textFile(inputPath)
       .zipWithIndex()
-      .flatMap { case (line, lineNum) => {line.split(" ").map(word => (word, (lineNum, 1)))}}
+      .flatMap { case (line, lineNum) => {line.split(" ").map(word => (word, (lineNum + 1, 1)))}}
       .groupBy { case (word, (_, _)) => word}
-      .map { case (word, b) => (word, b.size, getWordCountByLine(b))} // (word, count, array[(lineNum, count)])
+      .map { case (word, b) => (word, b.size, getWordCountByLine(b))}
       .saveAsTextFile(outputPath)
 
 

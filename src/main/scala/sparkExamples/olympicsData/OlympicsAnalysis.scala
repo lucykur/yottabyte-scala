@@ -24,9 +24,9 @@ object OlympicsAnalysis {
     )
     val file = sc.textFile(inputPath)
 
-
     file.map(parse)
       .map(olympicRecord => ((olympicRecord.name, olympicRecord.category), 1))
+      .distinct()
       .reduceByKey(_+_)
       .filter { case ((name, sport), total) => total > 1}
       .saveAsTextFile(outputPath)
