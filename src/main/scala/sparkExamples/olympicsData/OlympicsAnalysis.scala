@@ -14,28 +14,29 @@ case class Record(name: String,
                   total: Int)
 
 object OlympicsAnalysis {
-
   def main(arg: Array[String]) = {
 
-    val master = arg(0)
-
-    val inputFilePath = arg(1)
-
-    val outputFilePath = arg(2)
-
+    val inputPath = arg(0)
     val sc = new SparkContext(
       new SparkConf()
-        .setMaster(master)
+        .setMaster("local")
         .setAppName("olympics data analysis")
     )
-    val file = sc.textFile(inputFilePath)
+    val file = sc.textFile(inputPath)
 
-    val parsedRecords = file.map(parse)
 
-    val medalsPerCountry: RDD[(String, Int)] = totalMedalsPerCountry(parsedRecords)
+    val ((country, year), medals) = file.map(parse)
+                            .filter(olympicRecord => olympicRecord.country.equalsIgnoreCase("United States"))
+                            .map(usOlympicRecord => ((usOlympicRecord.country, usOlympicRecord.year), usOlympicRecord.total))
+                            .reduceByKey(_+_)
+                            .sortBy { case (_ , total) => -total}
+                            .first()
 
-    medalsPerCountry.saveAsTextFile(outputFilePath)
+
+    print(s"${country} in ${year} : ${medals}");
   }
+
+
 
   def parse(input: String): Record = {
     val split = input.split(",")
@@ -47,12 +48,5 @@ object OlympicsAnalysis {
       split(5).toInt,
       split(6).toInt,
       split(7).toInt)
-  }
-
-  def totalMedalsPerCountry(input: RDD[Record]): RDD[(String, Int)] = {
-
-    input.map(record => (record.country, record.total))
-      .reduceByKey(_ + _)
-      .sortBy { case (country, total) => -total }
   }
 }
