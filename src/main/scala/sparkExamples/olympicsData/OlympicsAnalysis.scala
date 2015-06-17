@@ -27,12 +27,11 @@ object OlympicsAnalysis {
 
 
     file.map(parse)
-      .filter(olympicRecord => olympicRecord.country.equalsIgnoreCase("United States"))
-      .map(usOlympicRecord => ((usOlympicRecord.country, usOlympicRecord.year), usOlympicRecord.total))
-      .reduceByKey(_ + _)
-      .filter { case ((country, year), total) => total < 200}
+      .map(olympicRecord => ((olympicRecord.name, olympicRecord.category), 1))
+      .reduceByKey(_+_)
+      .filter { case ((name, sport), total) => total > 1}
       .saveAsTextFile(outputPath)
-  
+
   }
 
 
