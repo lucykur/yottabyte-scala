@@ -17,6 +17,7 @@ object OlympicsAnalysis {
   def main(arg: Array[String]) = {
 
     val inputPath = arg(0)
+    val outputPath = "hdfs:///user/lucykur/results"
     val sc = new SparkContext(
       new SparkConf()
         .setMaster("local")
@@ -25,15 +26,13 @@ object OlympicsAnalysis {
     val file = sc.textFile(inputPath)
 
 
-    val ((country, year), medals) = file.map(parse)
-                            .filter(olympicRecord => olympicRecord.country.equalsIgnoreCase("United States"))
-                            .map(usOlympicRecord => ((usOlympicRecord.country, usOlympicRecord.year), usOlympicRecord.total))
-                            .reduceByKey(_+_)
-                            .sortBy { case (_ , total) => -total}
-                            .first()
-
-
-    print(s"${country} in ${year} : ${medals}");
+    file.map(parse)
+      .filter(olympicRecord => olympicRecord.country.equalsIgnoreCase("United States"))
+      .map(usOlympicRecord => ((usOlympicRecord.country, usOlympicRecord.year), usOlympicRecord.total))
+      .reduceByKey(_ + _)
+      .filter { case ((country, year), total) => total < 200}
+      .saveAsTextFile(outputPath)
+  
   }
 
 
