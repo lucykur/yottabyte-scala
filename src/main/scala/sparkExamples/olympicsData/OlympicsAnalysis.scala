@@ -1,7 +1,6 @@
 package sparkExamples.olympicsData
 
 import org.apache.spark.SparkContext.rddToPairRDDFunctions
-import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 
 case class Record(name: String,
